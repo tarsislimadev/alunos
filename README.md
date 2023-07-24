@@ -1,0 +1,5 @@
+# Alunos
+
+## License
+
+[MIT](./LICENSE)
