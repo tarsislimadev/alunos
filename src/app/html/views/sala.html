@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+    <div class="header">
+        <div class="title" data-bind="text: nome">
+            Sala
+        </div>
+    </div>
+    <div class="content" data-bind="visible: carregando">Carregando...</div>
+    <div class="content" data-bind="visible: !carregando()" style="display: none;">
+        <div data-bind="text: errorMessage" class="error-message"></div>
+        <h2>Horários</h2>
+        <div data-bind="visible: !horarios().length">
+            Não há horários marcados para essa sala.
+        </div>
+        <div data-bind="foreach: horarios" class="horarios">
+            <psicologo params="p: $data"></psicologo>
+        </div>
+    </div>
+
+    
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/components/horario.js"></script>
+    <script>
+        function ViewModel() {
+            var self = this;
+
+            self.carregando = ko.observable(true);
+            self.errorMessage = ko.observable('');
+            self.message = ko.observable('');
+
+            self.nome = ko.observable(null);
+            self.horarios = ko.observableArray([]);
+
+            self.carregarSala = function (sala) {
+                self.nome(sala.nome);
+                App.server.sala(sala.id)
+                    .then(function (res) { self.horarios(res.horarios.map(h => new Horario(h))); })
+                    .catch(function (err) { self.errorMessage(err.message); })
+                    .finally(function () { self.carregando(false); });
+            };
+
+            self.init = function () {
+                self.carregarSala(App.pages.getData(App.local.SALA));
+            };
+        }
+    </script>
+    <script src="../js/init.js"></script>
+
+</body>
+</html>

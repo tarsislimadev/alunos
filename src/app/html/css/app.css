@@ -1,0 +1,161 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  outline: none;
+  border: none; }
+
+body {
+  font-family: sans-serif; }
+
+body,
+button,
+select,
+input,
+textarea {
+  font-size: 24px;
+  background-color: transparent; }
+
+h5 {
+  font-size: 0.5em; }
+
+a,
+a:visited,
+a:hover {
+  color: #003366;
+  text-decoration: none; }
+
+.header {
+  background-color: #9999ff;
+  margin-bottom: 10px; }
+  .header *,
+  .header *::after,
+  .header *::before {
+    color: #003366; }
+  .header .title {
+    padding: 10px;
+    font-weight: bold; }
+    .header .title .icons {
+      float: right; }
+
+.content {
+  padding: 10px; }
+  .content .form .input label {
+    display: block; }
+  .content .form .input input,
+  .content .form .input select {
+    width: calc(100% - 10px);
+    box-shadow: inset -1px -1px #9999ff;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 10px;
+    display: inline-block; }
+
+.menu .item {
+  margin-bottom: 10px; }
+  .menu .item a {
+    padding: 10px;
+    background-color: #9999ff;
+    color: #003366;
+    border-radius: 5px;
+    display: block; }
+
+.button {
+  padding: 10px;
+  background-color: #9999ff;
+  color: #003366;
+  border-radius: 5px;
+  margin-bottom: 5px; }
+  .button.button-block {
+    display: block;
+    width: 100%;
+    padding: 10px; }
+  .button.floating-button {
+    position: fixed;
+    z-index: 100;
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    border-radius: 50%;
+    bottom: 0;
+    right: 0; }
+
+.text-center {
+  text-align: center; }
+
+.small-text {
+  font-size: 0.5em; }
+
+.error-message,
+.error {
+  color: red;
+  margin-bottom: 5px; }
+
+.t {
+  position: static; }
+  .t-small {
+    font-size: 0.5em; }
+  .t-center {
+    text-align: center; }
+
+.horario {
+  margin-bottom: 5px;
+  padding: 10px;
+  box-shadow: 0px 0px 2px 0px #9999ff;
+  font-size: 0.75em; }
+
+.clear {
+  clear: both; }
+
+.select-ano, .select-mes, .select-semana, .select-dia {
+  text-align: center;
+  clear: both;
+  line-height: 34px;
+  margin-bottom: 25px;
+  width: 100%;
+  display: inline-block; }
+  .select-ano .prev, .select-mes .prev, .select-semana .prev, .select-dia .prev {
+    float: left;
+    width: 68px;
+    background-color: #9999ff;
+    font-weight: bold;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+    border-radius: 5px; }
+  .select-ano .current, .select-mes .current, .select-semana .current, .select-dia .current {
+    float: left;
+    width: 60%; }
+  .select-ano .next, .select-mes .next, .select-semana .next, .select-dia .next {
+    float: right;
+    width: 68px;
+    background-color: #9999ff;
+    font-weight: bold;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+    border-radius: 5px; }
+
+.right {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 10px; }
+
+.periods {
+  padding-right: 6px; }
+  .periods button {
+    border-top: 1px solid #003366;
+    border-bottom: 1px solid #003366;
+    margin-right: -6px;
+    padding: 0px 5px;
+    height: 30px;
+    line-height: 30px; }
+    .periods button.selected {
+      color: #9999ff;
+      background-color: #003366; }
+  .periods button:first-child {
+    border-left: 1px solid #003366;
+    border-radius: 10px 0px 0px 10px; }
+  .periods button:last-child {
+    border-right: 1px solid #003366;
+    border-radius: 0px 10px 10px 0px; }

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+    <div class="header">
+        <div class="title" data-bind="text: title">
+            Turma
+        </div>
+    </div>
+    <div data-bind="text: errorMessage" class="error-message"></div>
+    <div class="content" data-bind="visible: carregando">Carregando...</div>
+    <div class="content" data-bind="visible: !carregando()" style="display: none;">
+        <div class="menu" data-bind="foreach: alunos">
+            <div class="item">
+                <a href="#" data-bind="text: title" >Item</a>
+            </div>
+        </div>
+        <button data-bind="click: adicionar_aluno_turma" class="button button-block">Adicionar aluno</button>
+    </div>
+
+
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/components/menu_item.js"></script>
+    <script>
+        function ViewModel() {
+            var self = this;
+
+            self.carregando = ko.observable(true);
+            self.errorMessage = ko.observable('');
+
+            self.turma = ko.observable();
+
+            self.title = ko.computed(function () {
+                var turma = self.turma();
+
+                if (['', null, undefined].indexOf(turma) != -1)
+                    return 'Turma';
+
+                if (['', null, undefined].indexOf(turma.nome) != -1)
+                    return 'Turma*';
+
+                return turma.nome;
+            });
+
+            self.alunos = ko.observableArray([]);
+
+            self.carregarTurma = function (id) {
+                self.carregando(true);
+                self.errorMessage('');
+
+                App.server.turma(id)
+                    .then(function (res) {
+                        self.turma(res.turma);
+
+                        if (res.alunos.length === 0)
+                            self.errorMessage('Não há alunos cadastrados nessa turma.');
+                        else
+                            self.alunos(res.alunos.map(a => new MenuItem(a)));
+                    })
+                    .catch(function (err) {
+                        self.errorMessage(err.message);
+                    })
+                    .finally(function () {
+                        self.carregando(false);
+                    });
+            };
+
+            self.adicionar_aluno_turma = function () {
+                App.pages.goTo('adicionar_aluno_turma', { turma : self.turma().id });
+            };
+
+            self.init = function () {
+                self.carregarTurma(App.pages.getData('id'));
+            };
+        }
+    </script>
+    <script src="../js/init.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css" type="text/css">
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="title">
+            Horário
+        </div>
+    </div>
+    <div data-bind="text: errorMessage" class="error-message"></div>
+    <div class="content" data-bind="visible: carregando">Carregando...</div>
+    <div class="content" data-bind="visible: !carregando()" style="display: none;">
+        <div data-bind="text: errorMessage" class="error-message"></div>
+        <div class="form" data-bind="with: horario">
+            <div class="input">
+                <label for="usuario">Psicólogo(a)</label>
+                <input type="text" id="usuario" data-bind="value: usuario_nome" readonly>
+            </div>
+            <div class="input">
+                <label for="sala">Sala</label>
+                <input type="text" id="sala" data-bind="value: sala_nome" readonly>
+            </div>
+            <div class="input">
+                <label for="data">Data</label>
+                <input type="text" id="data" data-bind="value: data" readonly>
+            </div>
+            <div class="input">
+                <label for="hora">Hora inicial</label>
+                <input type="text" id="hora_inicial" data-bind="value: hora_inicial" readonly>
+            </div>
+            <div class="input">
+                <label for="hora">Hora final</label>
+                <input type="text" id="hora_final" data-bind="value: hora_final" readonly>
+            </div>
+            <div class="input">
+                <label for="periodicidade">Periodicidade</label>
+                <input type="text" id="periodicidade" data-bind="value: periodicidade_nome" readonly>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/components/horario.js"></script>
+    <script>
+        function ViewModel() {
+            var self = this;
+
+            self.errorMessage = ko.observable('');
+            self.horario = ko.observable(null);
+
+            self.carregarHorario = function (sala, data, hora_inicial) {
+                App.server.horario(sala, data, hora_inicial).then(function (res) {
+                    self.horario(new Horario(res.horario));
+                }).catch(function (err) {
+                    self.errorMessage(err.message);
+                });
+            };
+
+            self.init = function () {
+                var data = App.pages.getData();
+                self.carregarHorario(
+                    data[App.local.SALA_ID],
+                    data[App.local.DATA],
+                    data[App.local.HORA_INICIAL]
+                );
+            };
+        }
+
+    </script>
+    <script src="../js/init.js"></script>
+
+</body>
+
+</html>

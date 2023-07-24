@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+    <div class="header">
+        <div class="title">
+            Psicólogos
+        </div>
+    </div>
+    <div class="content">
+        <div data-bind="text: errorMessage" class="error-message"></div>
+        <div data-bind="text: message"></div>
+        <div class="menu" data-bind="foreach: psicologos">
+            <div class="item">
+                <a href="#" data-bind="click: $root.psicologo($data), text: nome"></a>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        function ViewModel() {
+            var self = this;
+
+            self.errorMessage = ko.observable('');
+            self.message = ko.observable('');
+
+            self.psicologos = ko.observableArray([]);
+            self.psicologo = function (psicologo) {
+                return function () {
+                    var data = {};
+                    data[App.local.PSICOLOGO] = psicologo;
+                    App.pages.goTo('psicologo', data);
+                };
+            };
+
+            self.carregarPsicologos = function () {
+                self.psicologos([]);
+                App.server.psicologos()
+                    .then(function (res) {
+                        if (res.psicologos.length === 0) return self.message('Não há psicólogos cadastrados.');
+                        self.psicologos(res.psicologos.sort(function (a, b) { return a.nome.localeCompare(b.nome) }));
+                    })
+                    .catch(function (err) {
+                        self.errorMessage(err.message);
+                    });
+            };
+
+            self.init = self.carregarPsicologos;
+        }
+    </script>
+    <script src="../js/init.js"></script>
+
+</body>
+</html>

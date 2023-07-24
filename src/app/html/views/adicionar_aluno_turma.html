@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css" type="text/css">
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="title">
+            Adicionar aluno na turma
+        </div>
+    </div>
+    <div data-bind="text: errorMessage" class="error-message"></div>
+    <div class="content" data-bind="visible: carregando">Carregando...</div>
+    <div class="content" data-bind="visible: !carregando()" style="display: none;">
+        <div class="form">
+
+            
+            <div class="input">
+                <label for="sobrenome">Sobrenome</label>
+                <input type="text" id="sobrenome" data-bind="value: sobrenome">
+            </div>
+            <div class="input">
+                <label for="cpf">CPF</label>
+                <input type="text" id="cpf" data-bind="value: cpf" maxlength="11">
+            </div>
+            <button data-bind="click: salvar" class="button button-block">Salvar</button>
+        </div>
+    </div>
+
+
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        function ViewModel() {
+            var self = this;
+
+            self.carregando = ko.observable(false);
+            self.errorMessage = ko.observable('');
+
+            self.turma = ko.observable();
+            self.alunos = ko.observableArray();
+
+            self.carregarTurma = function (id) {
+                self.carregando(true);
+                self.errorMessage('');
+
+                App.server.turma(id)
+                    .then(function (res) {
+                        self.turma(res.turma);
+
+                        if (res.alunos.length === 0)
+                            self.errorMessage('Não há alunos cadastrados nessa turma.');
+                        else
+                            self.alunos(res.alunos.map(a => new MenuItem(a)));
+                    })
+                    .catch(function (err) {
+                        self.errorMessage(err.message);
+                    })
+                    .finally(function () {
+                        self.carregando(false);
+                    });
+            };
+
+            self.salvar = function () {
+                self.carregando(true);
+                self.errorMessage('');
+
+                App.server.cadastrar_aluno_turma(
+                    self.aluno().id, 
+                    self.turmasSelecionadas()
+                )
+                .then(function () {
+                    window.alert('Aluno(a) cadastrado(a) na turma.');
+                    App.pages.goToMenu();
+                })
+                .catch(function (err) {
+                    self.errorMessage(err.message);
+                })
+                .finally(function () {
+                    self.carregando(false);
+                });
+            };
+            
+            self.init = function () {
+                var turma = App.pages.getData();
+            };
+        }
+
+    </script>
+    <script src="../js/init.js"></script>
+
+</body>
+
+</html>

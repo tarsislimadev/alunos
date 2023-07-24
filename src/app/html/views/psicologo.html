@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css" type="text/css">
+</head>
+
+<body>
+    <div class="header">
+        <div class="title" data-bind="text: nome">
+            Psicólogo
+        </div>
+    </div>
+    <div class="content" data-bind="visible: carregando">Carregando...</div>
+    <div class="content" data-bind="visible: !carregando()" style="display: none;">
+        <div data-bind="text: errorMessage" class="error-message"></div>
+        <h2>Horários</h2>
+        <div data-bind="visible: !horarios().length">
+            Não há horários marcados para esse(a) psicólogo(a).
+        </div>
+        <div data-bind="foreach: horarios">
+            <psicologo params="p: $data"></psicologo>
+        </div>
+    </div>
+
+    
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/components/horario.js"></script>
+    <script>
+
+        function ViewModel() {
+            var self = this;
+
+            self.carregando = ko.observable(true);
+            self.errorMessage = ko.observable('');
+            self.message = ko.observable('');
+
+            self.usuario = ko.observable(null);
+
+            self.souEu = ko.computed(function () {
+                return self.usuario() && 
+                    self.usuario().id == App.local.retrieve(App.local.PESSOA).id;
+            });
+
+            self.nome = ko.computed(function () {
+                if (self.souEu()) {
+                    return self.usuario() && (self.usuario().nome + ' (você)');
+                } else {
+                    return self.usuario() && self.usuario().nome;
+                }
+            });
+
+            self.horarios = ko.observableArray([]);
+
+            self.novoHorario = function () {
+                App.pages.goTo('novo-horario');
+            };
+
+            self.carregarUsuario = function (usuario) {
+                self.usuario(usuario);
+                App.server.psicologo(usuario.id)
+                    .then(function (res) { self.horarios(res.horarios.map(h => new Horario(h))); })
+                    .catch(function (err) { self.errorMessage(err.message); })
+                    .finally(function () { self.carregando(false); });
+            };
+
+            self.init = function () {
+                self.carregarUsuario(App.pages.getData(App.local.PSICOLOGO));
+            };
+        }
+
+    </script>
+    <script src="../js/init.js"></script>
+</body>
+
+</html>

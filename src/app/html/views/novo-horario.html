@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+
+    <link rel="stylesheet" href="../css/app.css">
+</head>
+
+<body>
+    <div class="header">
+        <div class="title">
+            Novo horário
+        </div>
+    </div>
+    <div data-bind="visible: carregando">Carregando...</div>
+    <div class="content" data-bind="visible: !carregando()" style="display: none;">
+        <div data-bind="text: errorMessage" class="error-message"></div>
+        <div class="form">
+            <div class="input">
+                <label for="usuario">Psicólogo(a)</label>
+                <input type="text" id="usuario" data-bind="value: usuarioNome" readonly>
+            </div>
+            <div class="input">
+                <label for="sala">Sala</label>
+                <select name="sala" id="sala" data-bind="options: salas, optionsValue: 'id', optionsText: 'nome', value: salaId, optionsCaption: 'Sala'"></select>
+                <small class="error" data-bind="visible: errors().sala, text: errors().sala"></small>
+            </div>
+            <div class="input">
+                <label for="data">Data</label>
+                <input type="date" id="data" data-bind="value: data">
+                <small class="error" data-bind="visible: errors().data, text: errors().data"></small>
+            </div>
+            <div class="input">
+                <label for="hora_inicial">Horário de início</label>
+                <input type="time" id="hora_inicial" data-bind="value: hora_inicial">
+                <small class="error" data-bind="visible: errors().hora_inicial, text: errors().hora_inicial"></small>
+            </div>
+            <div class="input">
+                <label for="hora">Horário de termino</label>
+                <input type="time" id="hora" data-bind="value: hora_final">
+                <small class="error" data-bind="visible: errors().hora_final, text: errors().hora_final"></small>
+            </div>
+            <div class="input">
+                <label for="periodicidade">Periodicidade</label>
+                <select name="periodicidade" id="periodicidade" data-bind="options: periodicidades, optionsValue: 'key', optionsText: 'value', value: periodicidade, optionsCaption: 'Periodicidade'"></select>
+                <small class="error" data-bind="visible: errors().periodicidade, text: errors().periodicidade"></small>
+            </div>
+            <button data-bind="click: salvar" class="button">Salvar</button>
+        </div>
+    </div>
+
+
+    <script src="../js/jquery.js"></script>
+    <script src="../js/ko.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/moment.js/moment-with-locales.js"></script>
+    <script>
+
+        function ViewModel() {
+            var self = this;
+
+            self.carregando = ko.observable(true);
+
+            self.errorMessage = ko.observable('');
+            self.errors = ko.observable({});
+            self.message = ko.observable('');
+
+            self.data = ko.observable('');
+            self.hora_inicial = ko.observable('');
+            self.hora_final   = ko.observable('');
+
+            self.usuario = ko.observable(App.pages.getData(App.local.PESSOA));
+            self.usuarioId = ko.computed(() => self.usuario() ? self.usuario().id : null);
+            self.usuarioNome = ko.computed(() => self.usuario() ? self.usuario().nome : null);
+
+            self.salas = ko.observableArray([]);
+            self.sala = ko.observable(App.pages.getData(App.local.SALA));
+            self.salaId = ko.observable(self.sala() ? self.sala().id : undefined);
+
+            self.periodicidades = ko.observableArray(App.period.list());
+            self.periodicidade = ko.observable(null);
+
+            self.validar = function () {
+                return new Promise(function (s, f) {
+                    var errors = {};
+
+                    if (self.salaId() == null)
+                        errors.sala = 'Selecione uma sala.';
+
+                    if (!self.data())
+                        errors.data = 'Escolha uma data.';
+
+                    if (!self.hora_inicial())
+                        errors.hora_inicial = 'Escolha um horário de início.';
+
+                    if (!self.hora_final())
+                        errors.hora_final = 'Escolha um horário de termino.';
+
+                    if (self.periodicidade() == null)
+                        errors.periodicidade = 'Selecione uma periodicidade.';
+
+                    return Object.keys(errors).length == 0 ? s() && true : f(errors) && false;
+                });
+            };
+
+            self.salvar = function () {
+                self.errors({});
+                self.errorMessage('');
+
+                self.validar()
+                    .then(function () {
+                        App.server.novoHorario(
+                            self.usuarioId(),
+                            self.salaId(),
+                            self.data(),
+                            self.hora_inicial(),
+                            self.hora_final(),
+                            self.periodicidade()
+                        )
+                            .then(function () {
+                                alert('Horário agendado.');
+                                App.pages.goToMenu();
+                            })
+                            .catch(function (res) {
+                                alert(res.message);
+                            });
+                    })
+                    .catch((errors) => self.errors(errors));
+            };
+
+            self.init = function () {
+                var data = App.pages.getData(App.local.DATA);
+                if (data) self.data(data);
+
+                App.server.salas()
+                    .then(function (res) { self.salas(res.salas); })
+                    .catch(function (res) { self.errorMessage(res.message); })
+                    .finally(function () { self.carregando(false); });
+            };
+        }
+    </script>
+    <script src="../js/init.js"></script>
+
+</body>
+
+</html>

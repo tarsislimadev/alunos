@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title></title>
+
+	<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+	<div class="header">
+		<div class="title">
+			Login
+		</div>
+	</div>
+	<div class="content">
+		<div data-bind="text: errorMessage" class="error-message"></div>
+		<div data-bind="visible: carregando">Carregando...</div>
+		<div class="form" data-bind="visible: !carregando()" style="display: none;">
+			<div class="input">
+				<label for="cpf">Digite seu CPF</label>
+				<input type="text" placeholder="CPF" autofocus="true" maxlength="11" id="cpf" data-bind="value: cpf" />
+			</div>
+			<button type="button" class="button button-block" data-bind="visible: !eVoce(), click: validateCPF">Pronto!</button>
+			<span data-bind="visible: eVoce">
+				<span data-bind="text: pergunta"></span>
+				<button type="button" class="button button-block" data-bind="click: confirm">Sim</button>
+				<button type="button" class="button button-block" data-bind="click: clear">Não</button>
+			</span>
+		</div>
+	</div>
+
+	<script src="../js/jquery.js"></script>
+	<script src="../js/ko.js"></script>
+	<script src="../js/app.js"></script>
+	<script>
+		function ViewModel() {
+			var self = this;
+
+			self.carregando = ko.observable(false);
+			self.errorMessage = ko.observable(null);
+
+			self.cpf = ko.observable('');
+			self.nome = ko.observable('');
+			self.sobrenome = ko.observable('');
+
+			self.pergunta = ko.computed(function () {
+				return 'Seu nome completo é ' + self.nome() + ' ' + self.sobrenome() + '?'
+			});
+
+			self.eVoce = ko.computed(function () {
+				return !!self.nome() && !!self.sobrenome();
+			});
+
+			self.validate = function () {
+				return new Promise(function (s, f) {
+					var cpf = self.cpf();
+
+					if (!/^[0-9]{11}$/.test(cpf))
+						f({ message: 'O CPF contém 11 números.' });
+
+					s();
+				});
+			};
+
+			self.login = function () {
+				return App.server.login(self.cpf())
+					.then(function (res) {
+						App.local.set(App.local.CONFIG, res.config);
+						App.local.set(App.local.PESSOA, res.pessoa);
+						App.pages.goTo('menu');
+					})
+					.catch(function (err) {
+						self.errorMessage(err.message);
+					});
+			};
+
+			self.confirm = function () {
+				self.carregando(true);
+				self.errorMessage('');
+
+				self.validate()
+					.then(function () { self.login(); })
+					.catch(function (err) { self.errorMessage(err.message); })
+					.finally(function () { self.carregando(false); });
+			};
+
+			self.validateCPF = function () {
+				self.carregando(true);
+				self.errorMessage('');
+
+				self.validate()
+					.then(function () {
+						App.server.cpf(self.cpf())
+							.then(function (res) {
+								self.nome(res.pessoa.nome);
+								self.sobrenome(res.pessoa.sobrenome);
+							})
+							.catch(function (err) {
+								self.errorMessage(err.message);
+							})
+							.finally(function () {
+								self.carregando(false);
+							});
+					})
+					.catch(function (err) {
+						self.errorMessage(err.message);
+					})
+					.finally(function () {
+						self.carregando(false);
+					});
+
+				return true;
+			};
+
+			self.clear = function () {
+				self.errorMessage('');
+
+				self.cpf('');
+				self.nome('');
+				self.sobrenome('');
+			};
+
+			self.init = function () { };
+		}
+	</script>
+	<script src="../js/init.js"></script>
+
+</body>
+</html>
